@@ -181,7 +181,7 @@
                 <div class="value" id="kpi-exame-total">0</div>
             </div>
             <div class="card financeiro">
-                <h3>Valor Total</h3>
+                <h3>Valor Faturado</h3>
                 <div class="value" id="kpi-valor-total">R$ 0,00</div>
             </div>
             <div class="card incorreto">
@@ -238,6 +238,28 @@
     <footer>Gestão Financeira & Faturamento | Desenvolvido por Breno Coutinho &copy; 2026</footer>
 
     <script>
+        // ==========================================
+        // 🔒 TRAVA DE DOMÍNIO (LICENÇA DE USO)
+        // ==========================================
+        (function() {
+            // Permite rodar no seu GitHub ou localmente no seu computador
+            const dominiosPermitidos = ["brcoutinho-coder.github.io", "localhost", "127.0.0.1", ""];
+            let hostAtual = window.location.hostname;
+            
+            if (!dominiosPermitidos.includes(hostAtual)) {
+                // Se rodar em domínio não autorizado, apaga a tela e mostra a trava
+                document.body.innerHTML = `
+                    <div style="display:flex; height:100vh; width:100vw; background:#0f172a; color:white; justify-content:center; align-items:center; font-family:sans-serif; text-align:center; flex-direction:column;">
+                        <h1 style="color:#f43f5e; font-size:3em; margin-bottom:10px;">Acesso Bloqueado</h1>
+                        <p style="font-size:1.2em; color:#94a3b8;">Sistema proprietário de Breno Coutinho.</p>
+                        <p style="font-size:0.9em; color:#64748b; margin-top:20px;">Licença de uso não autorizada para este domínio.</p>
+                    </div>
+                `;
+                throw new Error("Violação de Licença: A execução do motor foi bloqueada pelo autor.");
+            }
+        })();
+        // ==========================================
+
         document.querySelectorAll('.custom-file-input').forEach(input => {
             input.addEventListener('change', function() {
                 let label = this.nextElementSibling;
