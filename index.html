@@ -242,12 +242,9 @@
         // 🔒 TRAVA DE DOMÍNIO (LICENÇA DE USO)
         // ==========================================
         (function() {
-            // Permite rodar no seu GitHub ou localmente no seu computador
             const dominiosPermitidos = ["brcoutinho-coder.github.io", "localhost", "127.0.0.1", ""];
             let hostAtual = window.location.hostname;
-            
             if (!dominiosPermitidos.includes(hostAtual)) {
-                // Se rodar em domínio não autorizado, apaga a tela e mostra a trava
                 document.body.innerHTML = `
                     <div style="display:flex; height:100vh; width:100vw; background:#0f172a; color:white; justify-content:center; align-items:center; font-family:sans-serif; text-align:center; flex-direction:column;">
                         <h1 style="color:#f43f5e; font-size:3em; margin-bottom:10px;">Acesso Bloqueado</h1>
@@ -283,7 +280,6 @@
         let idExportacao = 250; 
         let chartInstance = null;
 
-        // CARREGA DEPARA DA MEMÓRIA
         window.onload = () => {
             let salvo = localStorage.getItem('deparaFinalCoutinhoMemoria');
             if(salvo) { deparaMap = new Map(JSON.parse(salvo)); }
@@ -347,7 +343,7 @@
 
         function extrairValor(texto) {
             if (texto === undefined || texto === null) return 0;
-            let str = String(texto).replace(/[^0-9\,\.]/g, ''); 
+            let str = String(texto).replace(/[^0-9\,\.\-]/g, ''); 
             if (str.includes(',') && str.includes('.')) { str = str.replace(/\./g, '').replace(',', '.'); } 
             else if (str.includes(',')) { str = str.replace(',', '.'); }
             return parseFloat(str) || 0;
@@ -456,7 +452,8 @@
                     let cod = buscarColuna(row, ['PROCEDIMENTO', 'CODIGO']);
                     let cart = buscarColuna(row, ['NUMERO', 'CARTAO']);
                     let status = padronizarTexto(buscarColuna(row, ['SITUACAO', 'STATUS']));
-                    let trans = padronizarTexto(buscarColuna(row, ['TRANSACAO']));
+                    let trans = padronizarTexto(buscarColuna(row, ['TIPODETRANSACAO', 'TRANSACAO'])); // Ajustado
+                    let descOrizon = padronizarTexto(buscarColuna(row, ['DESCRICAO'])); // NOVA COLUNA
                     let dataCrua = buscarColuna(row, ['DATA']); 
                     let qtde = parseFloat(buscarColuna(row, ['QUANTIDADE', 'QTDE'])) || 0;
                     let auth = padronizarTexto(buscarColuna(row, ['SENHAEXTERNA']));
@@ -466,7 +463,7 @@
                     let dataLimpa = extrairData(dataCrua);
                     
                     if (!orizonMap.has(id)) orizonMap.set(id, []);
-                    orizonMap.get(id).push({ dataLimpa, dataCrua: dataCrua, ts: dataParaTimestamp(dataLimpa), status, trans, qtde, auth });
+                    orizonMap.get(id).push({ dataLimpa, dataCrua: dataCrua, ts: dataParaTimestamp(dataLimpa), status, trans, descOrizon, qtde, auth });
                 });
 
                 let korusAgrupado = new Map();
@@ -558,28 +555,40 @@
                         let isAltoCusto = exKorus.valorK >= 500;
                         if(isAltoCusto) tipoInc.push('ALTO_CUSTO');
 
-                        let oData = "N/A", oDataCrua = "N/A", oQtde = "N/A", oAuth = "N/A", oStatus = "N/A", oTrans = "N/A";
+                        let oData = "N/A", oDataCrua = "N/A", oQtde = "N/A", oAuth = "N/A", oStatus = "N/A", oTrans = "N/A", oDesc = "N/A";
 
                         if (!historico) {
                             msgIncorreto.push("Não Localizado");
                             tipoInc.push('NAO_LOCALIZADO');
                         } else {
                             let tsKorus = dataParaTimestamp(exKorus.dataK);
-                            let historicoValido = historico.filter(h => !h.trans.includes('CANCEL') && (h.status.includes('AUTORIZAD') || h.status.includes('JUSTIFICAD')));
-                            let listaDeBusca = historicoValido.length > 0 ? historicoValido : historico;
-
+                            
+                            // MOTOR DE PONTUAÇÃO BLINDADO
                             let melhor = null;
-                            let menorDiff = Infinity;
-                            let dataExata = false;
+                            let melhorScore = -999999;
 
-                            listaDeBusca.forEach(reg => {
-                                if (reg.ts === tsKorus) { melhor = reg; dataExata = true; } 
-                                else if (!dataExata) {
-                                    let diff = Math.abs(reg.ts - tsKorus);
-                                    if (diff < menorDiff) { menorDiff = diff; melhor = reg; }
+                            historico.forEach(reg => {
+                                let score = 0;
+                                let strTrans = String(reg.trans).toUpperCase();
+                                let strStatus = String(reg.status).toUpperCase();
+                                
+                                // Separação absoluta da lógica: Transação "Cancelamento" anula o status "Autorizada"
+                                let isCancelado = strTrans.includes('CANCEL');
+                                let isAutorizado = !isCancelado && (strStatus.includes('AUTORIZAD') || strStatus.includes('JUSTIFICAD') || strStatus.includes('PAG') || strStatus.includes('LIBERAD') || strStatus.includes('APROV'));
+                                
+                                if (isAutorizado) score += 10000;
+                                else if (!isCancelado) score += 5000; 
+                                
+                                if (reg.qtde === exKorus.qtdeK) score += 1000;
+                                
+                                let diffDias = Math.abs(reg.ts - tsKorus) / (1000 * 3600 * 24);
+                                score -= diffDias; 
+                                
+                                if (score > melhorScore) {
+                                    melhorScore = score;
+                                    melhor = reg;
                                 }
                             });
-                            if (!melhor) melhor = listaDeBusca[0];
 
                             oData = melhor.dataLimpa;
                             oDataCrua = melhor.dataCrua || "-";
@@ -587,22 +596,28 @@
                             oAuth = melhor.auth || "-";
                             oStatus = melhor.status;
                             oTrans = melhor.trans;
+                            oDesc = melhor.descOrizon || "-";
 
-                            let statusNegado = (!melhor.status.includes('AUTORIZAD') && !melhor.status.includes('JUSTIFICAD'));
+                            let strTransMelhor = String(melhor.trans).toUpperCase();
+                            let strStatusMelhor = String(melhor.status).toUpperCase();
+                            
+                            let ehCanceladoFinal = strTransMelhor.includes('CANCEL');
+                            let ehAutorizadoFinal = !ehCanceladoFinal && (strStatusMelhor.includes('AUTORIZAD') || strStatusMelhor.includes('JUSTIFICAD') || strStatusMelhor.includes('PAG') || strStatusMelhor.includes('LIBERAD') || strStatusMelhor.includes('APROV'));
+                            
                             let analiseContinua = true;
                             
-                            if (melhor.trans && melhor.trans.includes('CANCEL')) {
+                            if (ehCanceladoFinal) {
                                 msgIncorreto.push("Orizon Cancelou");
                                 tipoInc.push('CANCELADO_ORIZON');
                                 analiseContinua = false;
-                            } else if (statusNegado) {
+                            } else if (!ehAutorizadoFinal) {
                                 msgIncorreto.push(`Recusado/Negado`);
                                 tipoInc.push('STATUS_INVALIDO');
                                 analiseContinua = false;
                             } 
                             
                             if (analiseContinua) {
-                                if (!dataExata) { 
+                                if (melhor.ts !== tsKorus) { 
                                     msgIncorreto.push(`Data K:${exKorus.dataK} vs O:${melhor.dataLimpa}`);
                                     tipoInc.push('DIVERGENCIA_DATA');
                                 }
@@ -628,7 +643,7 @@
                             idExport: idExportacao++,
                             unid: atendimento.unid, atend: atendimento.atend, pac: atendimento.pac, cart: atendimento.cart,
                             codK: exKorus.cod, exameK: exKorus.exame, dataK: exKorus.dataK, qtdeK: exKorus.qtdeK, valorK: exKorus.valorK, valorRawK: exKorus.valorRawK, authK: exKorus.authK,
-                            dataO: oDataCrua, qtdeO: oQtde, authO: oAuth, statusO: oStatus, transO: oTrans,
+                            dataO: oDataCrua, qtdeO: oQtde, authO: oAuth, statusO: oStatus, transO: oTrans, descO: oDesc,
                             conciliado: conciliado, motivo: statusGeral
                         });
 
@@ -825,10 +840,10 @@
         function gerarCSV(dados, nomeArquivo) {
             if(dados.length === 0) return alert("Nenhum dado processado para exportar.");
             
-            let csv = "ID Controle;Unidade;Atendimento;Nome Paciente;Carteirinha;Cod Exame;Exame Korus;Data Korus;Qtde Korus;Valor Bruto Korus (Debug);Valor Final (R$);Auth Korus;Data Orizon;Qtde Orizon;Auth Orizon;Status Orizon;Transacao Orizon;Conciliado;Motivo Inconsistencia\n";
+            let csv = "ID Controle;Unidade;Atendimento;Nome Paciente;Carteirinha;Cod Exame;Exame Korus;Data Korus;Qtde Korus;Valor Bruto Korus (Debug);Valor Final (R$);Auth Korus;Data Orizon;Qtde Orizon;Auth Orizon;Status Orizon;Transacao Orizon;Descricao Orizon;Conciliado;Motivo Inconsistencia\n";
             
             dados.forEach(r => {
-                csv += `${r.idExport};${r.unid};${r.atend};${r.pac};${forcarTexto(r.cart)};${r.codK};${r.exameK};${r.dataK};${r.qtdeK};${forcarTexto(r.valorRawK)};${r.valorK.toFixed(2).replace('.',',')};${forcarTexto(r.authK)};${r.dataO};${r.qtdeO};${forcarTexto(r.authO)};${r.statusO};${forcarTexto(r.transO)};${r.conciliado};${r.motivo}\n`;
+                csv += `${r.idExport};${r.unid};${r.atend};${r.pac};${forcarTexto(r.cart)};${r.codK};${r.exameK};${r.dataK};${r.qtdeK};${forcarTexto(r.valorRawK)};${r.valorK.toFixed(2).replace('.',',')};${forcarTexto(r.authK)};${r.dataO};${r.qtdeO};${forcarTexto(r.authO)};${r.statusO};${forcarTexto(r.transO)};${forcarTexto(r.descO)};${r.conciliado};${r.motivo}\n`;
             });
             
             let link = document.createElement("a");
