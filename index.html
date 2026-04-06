@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
         
         :root { --primary: #1e293b; --bradesco: #cc092f; --bradesco-dark: #8a051e; --secondary: #f1f5f9; --accent: #2563eb; --danger: #cc092f; --warning: #d97706; --success: #059669; --bg: #f8fafc; }
         
@@ -79,17 +79,48 @@
         .chart-container { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; flex: 1.5; min-width: 350px; display: flex; flex-direction: column; }
         .chart-title { margin: 0 0 15px 0; color: #475569; text-align: center; font-size: 0.95em; font-weight: 800; text-transform: uppercase;}
         
-        /* GESTÃO DE STATUS & LEGENDA */
+        /* GESTÃO DE STATUS (DESIGN PREMIUM PÍLULA) & LEGENDA */
         .legenda-status { display: flex; gap: 15px; background: white; padding: 12px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; align-items: center; justify-content: center; font-size: 0.85em; font-weight: 600; color: #475569; flex-wrap: wrap;}
         .legenda-item { display: flex; align-items: center; gap: 6px; }
-        .legenda-cor { width: 14px; height: 14px; border-radius: 3px; }
+        .legenda-cor { width: 14px; height: 14px; border-radius: 14px; }
         
-        .status-select { font-family: 'Inter', sans-serif; font-weight: 800; border-radius: 4px; padding: 5px 10px; border: none; outline: none; cursor: pointer; font-size: 0.8em; color: white; margin-right: 12px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
-        .status-select:hover { filter: brightness(1.1); }
-        .status-DEFAULT { background-color: #94a3b8; color: white;}
-        .status-AUSENTE { background-color: #3b82f6; color: white;}
-        .status-PENDENTE { background-color: #f59e0b; color: white;}
-        .status-CORRIGIDA { background-color: #10b981; color: white;}
+        .status-badge {
+            appearance: none;
+            -webkit-appearance: none;
+            padding: 6px 30px 6px 14px;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8em;
+            font-weight: 800;
+            border: 2px solid transparent;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1em;
+            margin-right: 12px;
+        }
+        .status-badge:hover { filter: brightness(0.95); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        
+        .status-DEFAULT { 
+            background-color: #f1f5f9; color: #475569; border-color: #cbd5e1;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        }
+        .status-AUSENTE { 
+            background-color: #3b82f6; color: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        }
+        .status-PENDENTE { 
+            background-color: #f59e0b; color: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        }
+        .status-CORRIGIDA { 
+            background-color: #10b981; color: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        }
 
         /* FILTROS E LUPA */
         .filters-container { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
@@ -103,11 +134,11 @@
         .btn-search:hover { background: #0f172a; }
         
         /* RESULTADOS */
-        details { background: white; margin-bottom: 10px; border-radius: 6px; border: 1px solid #e2e8f0; overflow: hidden; }
-        summary { padding: 15px 20px; cursor: pointer; background: #fff; border-left: 4px solid var(--danger); display: flex; justify-content: space-between; align-items: center; list-style: none; transition: background 0.2s; }
+        details { background: white; margin-bottom: 10px; border-radius: 6px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        summary { padding: 12px 20px; cursor: pointer; background: #fff; border-left: 4px solid var(--danger); display: flex; justify-content: space-between; align-items: center; list-style: none; transition: background 0.2s; }
         summary::-webkit-details-marker { display: none; }
         summary:hover { background: #f8fafc; }
-        .summary-title { font-size: 1em; font-weight: 600; color: var(--primary); display: flex; align-items: center; }
+        .summary-title { font-size: 0.95em; font-weight: 600; color: var(--primary); display: flex; align-items: center; }
         
         .details-content { padding: 0; background: white; border-top: 1px solid #e2e8f0; overflow-x: auto;}
         .info-row { padding: 12px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 0.85em; color: #475569; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
@@ -117,7 +148,7 @@
         th { background: white; color: #64748b; font-weight: 800; text-transform: uppercase; font-size: 0.85em;}
         tr:hover td { background: #f8fafc; }
         
-        .tag { padding: 5px 10px; border-radius: 4px; font-size: 0.85em; font-weight: 800; color: white; display: inline-block; text-transform: uppercase; }
+        .tag { padding: 5px 10px; border-radius: 4px; font-size: 0.85em; font-weight: 800; color: white; display: inline-block; text-transform: uppercase; text-align: center; }
         .tag-danger { background: var(--danger); }
         .tag-warning { background: var(--warning); }
         .tag-success { background: var(--success); }
@@ -143,7 +174,7 @@
             </div>
             <div class="header-buttons">
                 <button class="btn" onclick="location.reload()">Limpar Painel</button>
-                <button class="btn btn-primary" onclick="iniciarVarredura()">▶ Iniciar Varredura (Lotes)</button>
+                <button class="btn btn-primary" onclick="iniciarVarredura()">▶ Iniciar Varredura</button>
                 <button class="btn btn-warning" onclick="exportarCSVIncorretos()">Exportar Apenas Incorretos</button>
                 <button class="btn" onclick="exportarCSVCompleto()">Exportar Tudo</button>
             </div>
@@ -172,15 +203,12 @@
     </div>
 
     <div id="modalAlerta" class="modal-overlay">
-        <div class="modal-content" style="border-top: 4px solid var(--danger);">
+        <div class="modal-content" style="border-top: 4px solid var(--danger); max-height: 90vh;">
             <div class="modal-header">
-                <h2 style="color: var(--danger);">🚨 Risco de Glosa no Cadastro</h2>
+                <h2 style="color: var(--danger);">🚨 Alertas de Faturamento</h2>
                 <button class="close-btn" onclick="document.getElementById('modalAlerta').style.display='none'">×</button>
             </div>
-            <div style="font-size: 0.95em; color: #475569; font-weight: 600;">
-                Os seguintes pacientes possuem menos de 1 ano de idade no Korus. Verifique as datas de nascimento na recepção:
-            </div>
-            <div class="depara-list-container" id="listaAlertasUI" style="max-height: 250px; background: #fef2f2; border-color: #fecaca;">
+            <div class="depara-list-container" id="listaAlertasUI" style="max-height: 400px; background: #fff; border: none; padding: 0;">
                 </div>
             <button class="btn" style="align-self: flex-end; background: var(--bradesco); color: white; padding: 10px 30px; border:none;" onclick="document.getElementById('modalAlerta').style.display='none'">Ciente</button>
         </div>
@@ -247,7 +275,7 @@
 
     <div class="legenda-status">
         <span style="text-transform: uppercase; letter-spacing: 0.5px;">Gestão de Correção:</span>
-        <div class="legenda-item"><div class="legenda-cor" style="background:#94a3b8;"></div> Sem Status</div>
+        <div class="legenda-item"><div class="legenda-cor" style="background:#e2e8f0; border: 1px solid #cbd5e1;"></div> Sem Status</div>
         <div class="legenda-item"><div class="legenda-cor" style="background:#3b82f6;"></div> Ausente</div>
         <div class="legenda-item"><div class="legenda-cor" style="background:#f59e0b;"></div> Pendente</div>
         <div class="legenda-item"><div class="legenda-cor" style="background:#10b981;"></div> Corrigida</div>
@@ -275,11 +303,12 @@
             <option value="DIVERGENCIA_AUTH">Senha Incorreta</option>
             <option value="IDADE_INVALIDA">Recém-Nascido</option>
             <option value="DIVERGENCIA_PLANO">Múltiplos Planos</option>
+            <option value="SEM_DEPARA">Código Sem Depara (Inicia com 8)</option>
             <option value="ALTO_CUSTO">Alto Custo (>= R$500)</option>
         </select>
 
         <div class="search-wrapper">
-            <input type="text" id="filtroBusca" list="listaAtend" class="search-bar" placeholder="Atendimento..." onkeypress="if(event.key === 'Enter') renderizarResultados()">
+            <input type="text" id="filtroBusca" list="listaAtend" class="search-bar" placeholder="Buscar Atendimento..." onkeypress="if(event.key === 'Enter') renderizarResultados()">
             <datalist id="listaAtend"></datalist>
             <button class="btn-search" onclick="renderizarResultados()" title="Aplicar Filtros">🔍</button>
         </div>
@@ -308,9 +337,6 @@
             }
         })();
 
-        // ==========================================
-        // 📁 MOTOR DE MEMÓRIA DE ARQUIVOS (+)
-        // ==========================================
         let arquivosKorus = [];
         let arquivosOrizon = [];
 
@@ -350,12 +376,7 @@
 
         Chart.register(ChartDataLabels);
 
-        // ==========================================
-        // 💾 BANCO DE DADOS LOCAL (DEPARA E STATUS)
-        // ==========================================
         let deparaMap = new Map();
-        let memoriaStatusAuditoria = {}; // Memória para Ausente/Pendente/Corrigida
-        
         let divergenciasEncontradas = [];
         let relatorioCompleto = []; 
         let todosAtendimentosGlobais = []; 
@@ -367,18 +388,18 @@
             let salvo = localStorage.getItem('deparaFinalCoutinhoMemoria');
             if(salvo) { deparaMap = new Map(JSON.parse(salvo)); }
             atualizarUIConfig();
-
-            // Carrega os Status Salvos
-            let salvoStatus = localStorage.getItem('statusAuditoriaCoutinho');
-            if(salvoStatus) { memoriaStatusAuditoria = JSON.parse(salvoStatus); }
         };
 
-        // Função ativada quando você muda a cor no painel
-        function alterarStatusAuditoria(chaveAtendimento, elementoSelect) {
-            memoriaStatusAuditoria[chaveAtendimento] = elementoSelect.value;
-            localStorage.setItem('statusAuditoriaCoutinho', JSON.stringify(memoriaStatusAuditoria));
-            // Atualiza a classe de cor imediatamente
-            elementoSelect.className = `status-select status-${elementoSelect.value}`;
+        // ==========================================
+        // 💾 MOTOR DE GRAVAÇÃO BLINDADA DO STATUS KANBAN
+        // ==========================================
+        function alterarStatusAuditoria(chaveAtendimentoSegura, elementoSelect) {
+            let dbFresco = JSON.parse(localStorage.getItem('statusAuditoriaCoutinho') || "{}");
+            dbFresco[chaveAtendimentoSegura] = elementoSelect.value;
+            localStorage.setItem('statusAuditoriaCoutinho', JSON.stringify(dbFresco));
+            
+            // Troca a classe visual na hora do clique
+            elementoSelect.className = `status-badge status-${elementoSelect.value}`;
         }
 
         function abrirConfig() { document.getElementById('modalConfig').style.display = 'flex'; }
@@ -446,13 +467,7 @@
 
         function padronizarTexto(texto) {
             if (!texto) return "";
-            return String(texto)
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/["']/g, "")
-                .replace(/\s+/g, ' ') 
-                .toUpperCase()
-                .trim();
+            return String(texto).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/["']/g, "").replace(/\s+/g, ' ').toUpperCase().trim();
         }
 
         function triturarAlfa(texto) {
@@ -552,6 +567,7 @@
             idExportacao = 250;
             
             let alertasRecemNascidos = new Set();
+            let alertasSemDepara = new Set();
 
             document.getElementById('resultados-container').innerHTML = '<div style="text-align:center; padding:40px; font-weight:600; color:#64748b;">Lendo Arquivos e Cruzando Lotes Financeiros...</div>';
             
@@ -656,7 +672,7 @@
                 });
 
                 let comboData = document.getElementById('filtroData');
-                comboData.innerHTML = '<option value="ALL">Todas as Datas</option>';
+                comboData.innerHTML = '<option value="ALL">Todas as Datas Registradas</option>';
                 Array.from(datasUnicas).sort((a,b) => dataParaTimestamp(a) - dataParaTimestamp(b)).forEach(d => {
                     let opt = document.createElement('option'); opt.value = d; opt.textContent = d; comboData.appendChild(opt);
                 });
@@ -689,6 +705,13 @@
                         if(temMultiplosPlanos) {
                             msgIncorreto.push("Múltiplos Planos na Guia");
                             tipoInc.push('DIVERGENCIA_PLANO');
+                        }
+
+                        // REGRA: CÓDIGO INICIADO EM 8 (SEM DEPARA)
+                        if (String(exKorus.cod).startsWith('8')) {
+                            msgIncorreto.push(`Possível Código Sem Depara`);
+                            tipoInc.push('SEM_DEPARA');
+                            alertasSemDepara.add(`Atend: ${atendimento.atend} | Paciente: ${atendimento.pac} | Cód: ${exKorus.cod}`);
                         }
 
                         let oData = "N/A", oDataCrua = "N/A", oQtde = "N/A", oAuth = "N/A", oStatus = "N/A", oTrans = "N/A", oDesc = "N/A";
@@ -826,13 +849,34 @@
                 divergenciasEncontradas = Array.from(atendimentosFinais.values());
                 renderizarResultados(); 
                 
+                // NOVO MODAL DUPLO DE ALERTAS
+                let mostrarModal = false;
+                let htmlAlertas = "";
+
                 if(alertasRecemNascidos.size > 0) {
-                    let listaHTML = '';
+                    htmlAlertas += `<div style="padding: 12px; background: #fef2f2; border-left: 4px solid #ef4444; margin-bottom: 12px; border-radius: 4px;">
+                                        <h4 style="margin:0 0 8px 0; color:#b91c1c;">👶 Recém-Nascidos (< 1 ano)</h4>`;
                     alertasRecemNascidos.forEach(a => {
                         let textoLimpo = a.replace(/%/g, ' ').replace(/\s+/g, ' ');
-                        listaHTML += `<div class="depara-item" style="border-bottom-color:#fecaca; color:#991b1b; font-weight:600;">${textoLimpo}</div>`;
+                        htmlAlertas += `<div style="font-size:0.85em; color:#7f1d1d; margin-bottom:4px; font-weight:600;">• ${textoLimpo}</div>`;
                     });
-                    document.getElementById('listaAlertasUI').innerHTML = listaHTML;
+                    htmlAlertas += `</div>`;
+                    mostrarModal = true;
+                }
+
+                if(alertasSemDepara.size > 0) {
+                    htmlAlertas += `<div style="padding: 12px; background: #fffbeb; border-left: 4px solid #f59e0b; margin-bottom: 10px; border-radius: 4px;">
+                                        <h4 style="margin:0 0 8px 0; color:#b45309;">⚠️ Códigos Sem Depara (Inicia com 8)</h4>`;
+                    alertasSemDepara.forEach(a => {
+                        let textoLimpo = a.replace(/%/g, ' ').replace(/\s+/g, ' ');
+                        htmlAlertas += `<div style="font-size:0.85em; color:#92400e; margin-bottom:4px; font-weight:600;">• ${textoLimpo}</div>`;
+                    });
+                    htmlAlertas += `</div>`;
+                    mostrarModal = true;
+                }
+
+                if(mostrarModal) {
+                    document.getElementById('listaAlertasUI').innerHTML = htmlAlertas;
                     setTimeout(() => { document.getElementById('modalAlerta').style.display = 'flex'; }, 500);
                 }
 
@@ -850,6 +894,9 @@
             let filtroConv = document.getElementById('filtroConvenio').value;
             let termoBusca = triturarAlfa(document.getElementById('filtroBusca').value);
             
+            // Puxa banco do localstorage instantes antes de desenhar a tela
+            let dbStatus = JSON.parse(localStorage.getItem('statusAuditoriaCoutinho') || "{}");
+
             let filtrados = [];
             let valorTotalGeral = 0;
             let examesTotalGeral = 0;
@@ -893,7 +940,7 @@
                 }
             });
 
-            let dynStats = { incNaoLoc: 0, incData: 0, incQtde: 0, incStatus: 0, incAuth: 0, incCancel: 0, incIdade: 0, incPlano: 0, atendInc: 0, examesInc: 0, valorEmRisco: 0 };
+            let dynStats = { incNaoLoc: 0, incData: 0, incQtde: 0, incStatus: 0, incAuth: 0, incCancel: 0, incIdade: 0, incPlano: 0, incSemDepara: 0, atendInc: 0, examesInc: 0, valorEmRisco: 0 };
             
             filtrados.forEach(atend => {
                 let temErroNesteAtend = false;
@@ -912,6 +959,7 @@
                         if(e.tipo.includes('STATUS_INVALIDO')) dynStats.incStatus += e.qtdeIncorreta;
                         if(e.tipo.includes('IDADE_INVALIDA')) dynStats.incIdade += e.qtdeIncorreta;
                         if(e.tipo.includes('DIVERGENCIA_PLANO')) dynStats.incPlano += e.qtdeIncorreta;
+                        if(e.tipo.includes('SEM_DEPARA')) dynStats.incSemDepara += e.qtdeIncorreta;
                     }
                 });
                 if(temErroNesteAtend) dynStats.atendInc++;
@@ -940,15 +988,13 @@
             }
 
             filtrados.forEach(d => {
-                // ==========================================
-                // 🏷️ INJEÇÃO DO SELECT DE STATUS (MEMÓRIA)
-                // ==========================================
-                let chaveUnicaStatus = `${d.unid}_${d.atend}`;
-                let statusSalvo = memoriaStatusAuditoria[chaveUnicaStatus] || 'DEFAULT';
+                // Chave Totalmente Segura (Apenas A-Z e 0-9)
+                let chaveUnicaStatusSegura = triturarAlfa(d.unid) + "_" + triturarAlfa(d.atend);
+                let statusSalvo = dbStatus[chaveUnicaStatusSegura] || 'DEFAULT';
 
                 let htmlSeletorStatus = `
-                    <select class="status-select status-${statusSalvo}" onclick="event.stopPropagation()" onchange="alterarStatusAuditoria('${chaveUnicaStatus}', this)">
-                        <option value="DEFAULT" ${statusSalvo === 'DEFAULT' ? 'selected' : ''}>⏳ STATUS</option>
+                    <select class="status-badge status-${statusSalvo}" onclick="event.stopPropagation()" onchange="alterarStatusAuditoria('${chaveUnicaStatusSegura}', this)">
+                        <option value="DEFAULT" ${statusSalvo === 'DEFAULT' ? 'selected' : ''}>STATUS</option>
                         <option value="AUSENTE" ${statusSalvo === 'AUSENTE' ? 'selected' : ''}>Ausente</option>
                         <option value="PENDENTE" ${statusSalvo === 'PENDENTE' ? 'selected' : ''}>Pendente</option>
                         <option value="CORRIGIDA" ${statusSalvo === 'CORRIGIDA' ? 'selected' : ''}>Corrigida</option>
@@ -958,7 +1004,7 @@
                 let detalhesHTML = d.incorretos.map(e => {
                     let corTag = 'tag-warning';
                     if (!e.isErro) corTag = 'tag-success';
-                    else if (e.tipo.includes('NAO_LOCALIZADO') || e.tipo.includes('STATUS_INVALIDO') || e.tipo.includes('IDADE_INVALIDA') || e.tipo.includes('DIVERGENCIA_PLANO')) corTag = 'tag-danger';
+                    else if (e.tipo.includes('NAO_LOCALIZADO') || e.tipo.includes('STATUS_INVALIDO') || e.tipo.includes('IDADE_INVALIDA') || e.tipo.includes('DIVERGENCIA_PLANO') || e.tipo.includes('SEM_DEPARA')) corTag = 'tag-danger';
 
                     return `
                     <tr><td>${e.cod}</td><td>${e.exame}</td><td>${e.dataK}</td><td>${e.qtdeIncorreta}</td>
@@ -998,16 +1044,16 @@
             let ctx = document.getElementById('errorChart').getContext('2d');
             
             if(chartInstance) {
-                chartInstance.data.datasets[0].data = [dynStats.incNaoLoc, dynStats.incData, dynStats.incQtde, dynStats.incAuth, dynStats.incStatus, dynStats.incIdade, dynStats.incPlano];
+                chartInstance.data.datasets[0].data = [dynStats.incNaoLoc, dynStats.incData, dynStats.incQtde, dynStats.incAuth, dynStats.incStatus, dynStats.incIdade, dynStats.incPlano, dynStats.incSemDepara];
                 chartInstance.update();
             } else {
                 chartInstance = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Não Localizado', 'Data Inc.', 'Qtde Inc.', 'Senha Inc.', 'Recus./Cancel.', 'Idade Inc.', 'Múltiplos Planos'],
+                        labels: ['Não Localizado', 'Data Inc.', 'Qtde Inc.', 'Senha Inc.', 'Recus./Cancel.', 'Idade Inc.', 'Múltiplos Planos', 'Sem Depara'],
                         datasets: [{
-                            data: [dynStats.incNaoLoc, dynStats.incData, dynStats.incQtde, dynStats.incAuth, dynStats.incStatus, dynStats.incIdade, dynStats.incPlano],
-                            backgroundColor: ['#cc092f', '#d97706', '#d97706', '#d97706', '#cc092f', '#8b5cf6', '#1e293b'],
+                            data: [dynStats.incNaoLoc, dynStats.incData, dynStats.incQtde, dynStats.incAuth, dynStats.incStatus, dynStats.incIdade, dynStats.incPlano, dynStats.incSemDepara],
+                            backgroundColor: ['#cc092f', '#d97706', '#d97706', '#d97706', '#cc092f', '#8b5cf6', '#1e293b', '#f59e0b'],
                             borderWidth: 0,
                             borderRadius: { topLeft: 4, topRight: 4 }
                         }]
@@ -1052,10 +1098,16 @@
         function gerarCSV(dados, nomeArquivo) {
             if(dados.length === 0) return alert("Nenhum dado processado para exportar.");
             
-            let csv = "ID Controle;Convênio;Plano(s);Unidade;Atendimento;Nome Paciente;Data Nasc.;Carteirinha;Cod Exame;Exame Korus;Data Korus;Qtde Korus;Valor Bruto Korus (Debug);Valor Final (R$);Auth Korus;Data Operadora;Qtde Operadora;Auth Operadora;Status Operadora;Transacao Operadora;Descricao Operadora;Conciliado;Motivo Inconsistencia\n";
+            // Puxa banco antes de exportar
+            let dbStatus = JSON.parse(localStorage.getItem('statusAuditoriaCoutinho') || "{}");
+            
+            let csv = "ID Controle;Convênio;Plano(s);Unidade;Atendimento;Nome Paciente;Data Nasc.;Carteirinha;Cod Exame;Exame Korus;Data Korus;Qtde Korus;Valor Bruto Korus (Debug);Valor Final (R$);Auth Korus;Data Operadora;Qtde Operadora;Auth Operadora;Status Operadora;Transacao Operadora;Descricao Operadora;Conciliado;Motivo Inconsistencia;Status Correcao (Kanban)\n";
             
             dados.forEach(r => {
-                csv += `${r.idExport};${r.convenio};${r.planos};${r.unid};${r.atend};${r.pac.replace(/%/g, ' ')};${r.dataNasc};${forcarTexto(r.cart)};${r.codK};${r.exameK};${r.dataK};${r.qtdeK};${forcarTexto(r.valorRawK)};${r.valorK.toFixed(2).replace('.',',')};${forcarTexto(r.authK)};${r.dataO};${r.qtdeO};${forcarTexto(r.authO)};${r.statusO};${forcarTexto(r.transO)};${forcarTexto(r.descO)};${r.conciliado};${r.motivo}\n`;
+                let chaveUnicaStatusSegura = triturarAlfa(r.unid) + "_" + triturarAlfa(r.atend);
+                let statusMemoria = dbStatus[chaveUnicaStatusSegura] || "SEM STATUS";
+                
+                csv += `${r.idExport};${r.convenio};${r.planos};${r.unid};${r.atend};${r.pac.replace(/%/g, ' ')};${r.dataNasc};${forcarTexto(r.cart)};${r.codK};${r.exameK};${r.dataK};${r.qtdeK};${forcarTexto(r.valorRawK)};${r.valorK.toFixed(2).replace('.',',')};${forcarTexto(r.authK)};${r.dataO};${r.qtdeO};${forcarTexto(r.authO)};${r.statusO};${forcarTexto(r.transO)};${forcarTexto(r.descO)};${r.conciliado};${r.motivo};${statusMemoria}\n`;
             });
             
             let link = document.createElement("a");
